@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # 1. Config Server (The foundation)
+  config-server:
+    image: config-server:latest
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. API Gateway
+  api-gateway:
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  # 3. Product Service
+  product-service:
+    image: product-service:latest
+    container_name: product-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  # 4. Order Service
+  order-service:
+    image: order-service:latest
+    container_name: order-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  # 5. Notification Service
+  notification-service:
+    image: notification-service:latest
+    container_name: notification-service
+    depends_on:
+      config-server:
+        condition: service_healthy
